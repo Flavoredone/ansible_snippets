@@ -1,0 +1,38 @@
+---
+- name: Установка базовых утилит и Oh My Zsh на серверы
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Установка базовых пакетов
+      ansible.builtin.package:
+        name:
+          - zsh
+          - htop
+          - mc
+          - ncdu
+          - git
+        state: present
+      register: package_install
+
+    - name: Создание скрипта для установки Oh My Zsh
+      ansible.builtin.copy:
+        content: |
+          #!/bin/sh
+          sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" --unattended
+        dest: "~/install_ohmyzsh.sh"
+        mode: '0755'
+      become: no  # Выполняется от имени пользователя
+
+    - name: Запуск скрипта установки Oh My Zsh
+      ansible.builtin.command: "~/install_ohmyzsh.sh"
+      args:
+        creates: "~/.oh-my-zsh"  # Пропускаем, если Oh My Zsh уже установлен
+      become: no
+      register: ohmyzsh_install
+      failed_when: ohmyzsh_install.rc != 0
+
+    - name: Проверка успешности установки
+      ansible.builtin.debug:
+        msg: "Пакеты и Oh My Zsh успешно установлены"
+      when: "(package_install.changed is defined and package_install.changed) or (ohmyzsh_install.changed is defined and ohmyzsh_install.changed)"
