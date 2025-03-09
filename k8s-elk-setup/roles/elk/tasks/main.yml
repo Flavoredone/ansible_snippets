@@ -1,0 +1,43 @@
+---
+- name: Add Elastic GPG key
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+
+- name: Add Elastic repository
+  apt_repository:
+    repo: deb https://artifacts.elastic.co/packages/7.x/apt stable main
+    state: present
+
+- name: Install Elasticsearch
+  apt:
+    name: elasticsearch
+    state: present
+
+- name: Install Logstash
+  apt:
+    name: logstash
+    state: present
+
+- name: Install Kibana
+  apt:
+    name: kibana
+    state: present
+
+- name: Start Elasticsearch service
+  service:
+    name: elasticsearch
+    state: started
+    enabled: yes
+
+- name: Start Logstash service
+  service:
+    name: logstash
+    state: started
+    enabled: yes
+
+- name: Start Kibana service
+  service:
+    name: kibana
+    state: started
+    enabled: yes
